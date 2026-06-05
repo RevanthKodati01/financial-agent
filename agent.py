@@ -199,7 +199,12 @@ if __name__ == "__main__":
                 final_answer = response.content[0].text
                 print(f"Claude: {final_answer}\n")
                 final_upper = final_answer.upper()
-                decision = "DENIED" if "DENIED" in final_upper else "APPROVED"
+                if "DENIED" in final_upper:
+                    decision = "DENIED"
+                elif "APPROVED" in final_upper:
+                    decision = "APPROVED"
+                else:
+                    decision = "UNCLEAR"
                 log_transaction(last_customer_id, last_amount, last_country, decision, final_answer[:200])
                 break
             
