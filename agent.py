@@ -171,12 +171,20 @@ def run_agent(customer_id,amount,country):
 if __name__ == "__main__":
     messages = []
     print("Financial Operations Agent ready. Type your request.\n")
+    
     while True:
         user_message = input("You: ")
         if not user_message.strip():
             print("Please enter a message.")
             continue
+        
         messages.append({"role": "user", "content": user_message})
+        
+        # Track transaction details from tool calls
+        last_customer_id = "UNKNOWN"
+        last_amount = 0
+        last_country = "UNKNOWN"
+        
         while True:
             response = client.messages.create(
                 model="claude-haiku-4-5",
@@ -185,17 +193,29 @@ if __name__ == "__main__":
                 system=system_prompt,
                 messages=messages
             )
+            
             if response.stop_reason == "end_turn":
                 messages.append({"role": "assistant", "content": response.content})
-                print(f"Claude: {response.content[0].text}\n")
+                final_answer = response.content[0].text
+                print(f"Claude: {final_answer}\n")
+                final_upper = final_answer.upper()
+                decision = "DENIED" if "DENIED" in final_upper else "APPROVED"
+                log_transaction(last_customer_id, last_amount, last_country, decision, final_answer[:200])
                 break
+            
             if response.stop_reason == "tool_use":
                 tool_use_block = next(block for block in response.content if block.type == "tool_use")
                 tool_name = tool_use_block.name
                 tool_input = tool_use_block.input
+                
                 if tool_name == "check_transaction_limit":
+                    last_customer_id = tool_input["customer_id"]
+                    last_amount = tool_input["amount"]
                     tool_result = check_transaction_limit(tool_input["customer_id"], tool_input["amount"])
+                
                 elif tool_name == "check_compliance_rules":
+                    last_country = tool_input["country_to"]
                     tool_result = check_compliance_rules(tool_input["country_to"], tool_input["amount"])
+                
                 messages.append({"role": "assistant", "content": [tool_use_block]})
                 messages.append({"role": "user", "content": [{"type": "tool_result", "tool_use_id": tool_use_block.id, "content": tool_result}]})
