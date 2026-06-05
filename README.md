@@ -72,7 +72,7 @@ Test cases cover: approved transactions, limit exceeded, restricted countries (I
 **Main Agent:** https://web-production-af676.up.railway.app
 
 **Admin Panel:** https://web-production-af676.up.railway.app/admin  
-Username: `admin` | Password: `jeeves2026`
+Username: `admin` | Password: `revanth2026`
 
 **API Docs:** https://web-production-af676.up.railway.app/docs
 
