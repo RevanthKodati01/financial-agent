@@ -81,7 +81,7 @@ def check_compliance_rules(country_to, amount):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT country_name, risk_level, max_amount FROM countries WHERE country_name = ?",
+        "SELECT country_name, risk_level, max_amount FROM countries WHERE LOWER(country_name) = LOWER(?)",
         (country_to,)
     )
     country = cursor.fetchone()

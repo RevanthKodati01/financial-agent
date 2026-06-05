@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Financial Operations Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f1117;
+            color: #e1e4e8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        .back-link {
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #8b949e;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #58a6ff;
+            border-bottom-color: #58a6ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #e1e4e8;
+            font-size: 14px;
+            padding: 10px 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #58a6ff;
+        }
+
+        select option {
+            background: #161b22;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: #238636;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2ea043;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #8b949e;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #21262d;
+            color: #e1e4e8;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #1c2128;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: rgba(35, 134, 54, 0.2);
+            color: #3fb950;
+        }
+
+        .badge-suspended {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .badge-allowed {
+            background: rgba(35, 134, 54, 0.2);
+            color: #3fb950;
+        }
+
+        .badge-high_risk {
+            background: rgba(210, 153, 34, 0.2);
+            color: #e3b341;
+        }
+
+        .badge-restricted {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #238636;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .toast.error {
+            background: #da3633;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <h1>⚙️ Admin Panel</h1>
+            <p>Manage customers and compliance rules</p>
+        </div>
+        <a href="/" class="back-link">← Back to Agent</a>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('customers')">Customers</div>
+        <div class="tab" onclick="switchTab('countries')">Compliance Rules</div>
+        <div class="tab" onclick="switchTab('transactions')">Transaction Log</div>
+    </div>
+
+    <!-- CUSTOMERS TAB -->
+    <div id="tab-customers" class="tab-content active">
+        <div class="grid">
+            <div class="card">
+                <h2>Add / Update Customer</h2>
+                <div class="form-group">
+                    <label>Customer ID</label>
+                    <input type="text" id="cust-id" placeholder="e.g. C-1042">
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="cust-name" placeholder="e.g. John Smith">
+                </div>
+                <div class="form-group">
+                    <label>Transaction Limit (USD)</label>
+                    <input type="number" id="cust-limit" placeholder="e.g. 10000">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="cust-status">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="saveCustomer()">Save Customer</button>
+            </div>
+
+            <div class="card">
+                <h2>All Customers</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Limit</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COUNTRIES TAB -->
+    <div id="tab-countries" class="tab-content">
+        <div class="grid">
+            <div class="card">
+                <h2>Add / Update Country Rule</h2>
+                <div class="form-group">
+                    <label>Country Name</label>
+                    <input type="text" id="country-name" placeholder="e.g. Brazil">
+                </div>
+                <div class="form-group">
+                    <label>Risk Level</label>
+                    <select id="country-risk" onchange="toggleMaxAmount()">
+                        <option value="allowed">Allowed</option>
+                        <option value="high_risk">High Risk</option>
+                        <option value="restricted">Restricted</option>
+                    </select>
+                </div>
+                <div class="form-group" id="max-amount-group">
+                    <label>Max Amount for High Risk (USD)</label>
+                    <input type="number" id="country-max" placeholder="e.g. 10000">
+                </div>
+                <button class="btn btn-primary" onclick="saveCountry()">Save Country Rule</button>
+            </div>
+
+            <div class="card">
+                <h2>All Country Rules</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Country</th>
+                                <th>Risk Level</th>
+                                <th>Max Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="countries-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANSACTIONS TAB -->
+    <div id="tab-transactions" class="tab-content">
+        <div class="card">
+            <h2>Recent Transactions</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Country</th>
+                            <th>Decision</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (tab === 'customers') loadCustomers();
+            if (tab === 'countries') loadCountries();
+            if (tab === 'transactions') loadTransactions();
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        function toggleMaxAmount() {
+            const risk = document.getElementById('country-risk').value;
+            document.getElementById('max-amount-group').style.display =
+                risk === 'high_risk' ? 'block' : 'none';
+        }
+
+        async function loadCustomers() {
+            const res = await fetch('/admin/customers');
+            const data = await res.json();
+            const tbody = document.getElementById('customers-table');
+            tbody.innerHTML = data.customers.map(c => `
+                <tr>
+                    <td>${c.customer_id}</td>
+                    <td>${c.name}</td>
+                    <td>$${c.transaction_limit.toLocaleString()}</td>
+                    <td><span class="badge badge-${c.status}">${c.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadCountries() {
+            const res = await fetch('/admin/countries');
+            const data = await res.json();
+            const tbody = document.getElementById('countries-table');
+            tbody.innerHTML = data.countries.map(c => `
+                <tr>
+                    <td>${c.country_name}</td>
+                    <td><span class="badge badge-${c.risk_level}">${c.risk_level}</span></td>
+                    <td>${c.max_amount ? '$' + c.max_amount.toLocaleString() : '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadTransactions() {
+            const res = await fetch('/admin/transactions');
+            const data = await res.json();
+            const tbody = document.getElementById('transactions-table');
+            tbody.innerHTML = data.transactions.map(t => `
+                <tr>
+                    <td>${t.transaction_id}</td>
+                    <td>${t.customer_id}</td>
+                    <td>$${t.amount.toLocaleString()}</td>
+                    <td>${t.country_to}</td>
+                    <td><span class="badge badge-${t.decision === 'APPROVED' ? 'allowed' : 'restricted'}">${t.decision}</span></td>
+                    <td>${t.timestamp.split('T')[0]}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveCustomer() {
+            const body = {
+                customer_id: document.getElementById('cust-id').value,
+                name: document.getElementById('cust-name').value,
+                transaction_limit: parseFloat(document.getElementById('cust-limit').value),
+                status: document.getElementById('cust-status').value
+            };
+            const res = await fetch('/admin/customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            showToast(data.message);
+            loadCustomers();
+        }
+
+        async function saveCountry() {
+            const body = {
+                country_name: document.getElementById('country-name').value,
+                risk_level: document.getElementById('country-risk').value,
+                max_amount: parseFloat(document.getElementById('country-max').value) || null
+            };
+            const res = await fetch('/admin/countries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            showToast(data.message);
+            loadCountries();
+        }
+
+        // Add transaction endpoint to api.py
+        // Load initial data
+        toggleMaxAmount();
+        loadCustomers();
+    </script>
+</body>
+
+</html>
