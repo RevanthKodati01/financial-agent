@@ -6,9 +6,11 @@ A financial operations agent built from scratch using the Anthropic API and Pyth
 
 Financial institutions spend $270 billion annually on compliance. The SEC imposed $8.2 billion in fines in 2024 alone — a 67% increase year over year. In H1 2025, financial crime fines surged 417%.
 
-Payments companies process thousands of cross-border transactions daily. Each one must be checked against customer limits and international compliance rules before execution. Manual review is slow and error-prone. A wrong approval in a sanctioned country is a regulatory violation.
+Production payments companies solve this with dedicated RegTech platforms, real-time OFAC API feeds, and ML-based fraud detection. This project doesn't replace that.
 
-This agent automates that decision — reliably, auditably, and at scale.
+What it demonstrates is the **right architecture** for building AI-powered compliance systems, specifically the design decisions that matter most in regulated environments: deterministic guardrails, audit trails, eval harnesses, and dynamic rule management without redeployment.
+
+If this were a production system, the next steps would be: PostgreSQL instead of SQLite, live OFAC sanctions API integration, KYC/AML screening, and multi-currency support. The architecture here scales to all of that.
 
 ## Why the Architecture Matters
 
