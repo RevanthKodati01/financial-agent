@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import anthropic
 from agent import run_agent, check_transaction_limit, check_compliance_rules, tools, system_prompt
@@ -10,6 +12,11 @@ load_dotenv()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 app = FastAPI(title="Financial Operations Agent API")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def home():
+    return FileResponse("static/index.html")
 initialize_database()
 
 class TransactionRequest(BaseModel):
